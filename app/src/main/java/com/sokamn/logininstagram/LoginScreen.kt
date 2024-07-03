@@ -1,6 +1,7 @@
 package com.sokamn.logininstagram
 
 import android.app.Activity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +12,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,8 +31,20 @@ fun LoginScreen() {
             .padding(8.dp)
     ) {
         Header(Modifier.align(Alignment.End))
-
+        Body(Modifier.align(Alignment.CenterHorizontally))
     }
+}
+
+@Composable
+fun Body(modifier: Modifier) {
+    Column(modifier = modifier) {
+        LogoImage()
+    }
+}
+
+@Composable
+fun LogoImage() {
+    Image(painter = painterResource(id = R.drawable.instagram), contentDescription = "Logo")
 }
 
 @Composable
