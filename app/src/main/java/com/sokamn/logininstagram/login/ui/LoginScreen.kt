@@ -1,7 +1,6 @@
-package com.sokamn.logininstagram
+package com.sokamn.logininstagram.login.ui
 
 import android.app.Activity
-import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,44 +30,32 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sokamn.logininstagram.R
 
-@Preview(
-    device = Devices.NEXUS_5,
-    showBackground = true
-)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(loginViewModel: LoginViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
         Header(Modifier.align(Alignment.TopEnd))
-        Body(Modifier.align(Alignment.Center))
+        Body(Modifier.align(Alignment.Center), loginViewModel)
         Footer(Modifier.align(Alignment.BottomCenter))
     }
 }
-
-fun enableLogin(email: String, password: String) =
-    Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length > 7
-
 
 @Composable
 fun Footer(modifier: Modifier) {
@@ -100,23 +87,24 @@ fun SignUp() {
 }
 
 @Composable
-fun Body(modifier: Modifier) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isLoginEnable by remember { mutableStateOf(false) }
+fun Body(modifier: Modifier, loginViewModel: LoginViewModel) {
+    val email: String by loginViewModel.email.observeAsState(initial = "")
+    val password: String by loginViewModel.password.observeAsState(initial = "")
+    val isLoginEnable: Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
 
     Column(modifier = modifier) {
         LogoImage(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.size(16.dp))
-        EmailField(email) {
-            email = it
-            isLoginEnable = enableLogin(email, password)
+        EmailField(email) { email ->
+            loginViewModel.onLoginChanged(email, password)
         }
         Spacer(modifier = Modifier.size(4.dp))
-        PasswordField(password) {
-            password = it
-            isLoginEnable = enableLogin(email, password)
-        }
+        PasswordField(
+            loginViewModel = loginViewModel,
+            password = password,
+            onTextChanged = { password ->
+                loginViewModel.onLoginChanged(email, password)
+            })
         Spacer(modifier = Modifier.size(8.dp))
         ForgotPassword(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.size(16.dp))
@@ -207,8 +195,14 @@ fun ForgotPassword(modifier: Modifier) {
 }
 
 @Composable
-fun PasswordField(password: String, onTextChanged: (String) -> Unit) {
-    var passVisibility by remember { mutableStateOf(false) }
+fun PasswordField(
+    password: String,
+    onTextChanged: (String) -> Unit,
+    loginViewModel: LoginViewModel
+) {
+
+    val passVisibility: Boolean by loginViewModel.passVisibility.observeAsState(initial = false)
+
     TextField(
         modifier = Modifier.fillMaxWidth(),
         value = password,
@@ -233,7 +227,7 @@ fun PasswordField(password: String, onTextChanged: (String) -> Unit) {
                 Icons.Filled.Visibility
             }
 
-            IconButton(onClick = { passVisibility = !passVisibility }) {
+            IconButton(onClick = { loginViewModel.onChangePassVisibility(passVisibility) }) {
                 Icon(imageVector = passVisibilityIcon, contentDescription = "Password Visibility")
             }
         },
